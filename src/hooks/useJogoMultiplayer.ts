@@ -113,8 +113,36 @@ export function useJogoMultiplayer() {
 
   const buscarOponente = useCallback((nome: string) => {
     setAvisoDesconexao(null);
+
+    const enviarBusca = () => {
+      conexao.emit("iniciar_busca", { nome });
+    };
+
+    if (conexao.connected) {
+      enviarBusca();
+      return;
+    }
+
+    setTela("buscando");
+    setAlerta("Conectando ao servidor…");
+
+    const aoConectar = () => {
+      enviarBusca();
+      conexao.off("connect_error", aoErroConexao);
+    };
+
+    const aoErroConexao = () => {
+      conexao.off("connect", aoConectar);
+      setTela("menu");
+      setAlerta("");
+      setAvisoDesconexao(
+        "Não foi possível conectar ao servidor. Confirme se está rodando `npm run server` (porta 3001) e se `VITE_SOCKET_URL` no `.env` aponta para o host certo.",
+      );
+    };
+
+    conexao.once("connect", aoConectar);
+    conexao.once("connect_error", aoErroConexao);
     conexao.connect();
-    conexao.emit("iniciar_busca", { nome });
   }, []);
 
   const confirmarEscolha = useCallback(() => {

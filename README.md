@@ -26,15 +26,21 @@ npm run dev
 
 4. Abra o endereço que o Vite mostrar (em geral `http://localhost:5173`). Para testar o multiplayer, use **duas abas** ou dois navegadores, cada um clicando em **Encontrar oponente**.
 
+### Por que não usar `localhost` no `.env` às vezes?
+
+Se `VITE_SOCKET_URL=http://localhost:3001`, o **browser** tenta falar com o localhost **da máquina onde a página abre** (outro PC, túnel, IDE na nuvem, etc.) — aí o Node na sua máquina não é alcançado e aparece erro de conexão.
+
+**Padrão recomendado em dev:** não defina `VITE_SOCKET_URL`. O cliente usa o mesmo host/porta do Vite e o [`vite.config.ts`](vite.config.ts) faz **proxy** de `/socket.io` para `http://127.0.0.1:3001` (onde roda `npm run server`).
+
 ### Variável de ambiente (opcional)
 
-Se o servidor não estiver em `localhost:3001`, crie um ficheiro `.env` na raiz:
+Só precisa de `.env` se o Socket.IO estiver noutro host acessível pelo browser (ex.: IP na LAN):
 
 ```env
-VITE_SOCKET_URL=http://seu-host:3001
+VITE_SOCKET_URL=http://192.168.0.10:3001
 ```
 
-O cliente lê `import.meta.env.VITE_SOCKET_URL` em [`src/servicos/socket.ts`](src/servicos/socket.ts).
+O cliente lê isso em [`src/servicos/socket.ts`](src/servicos/socket.ts). Para mudar o alvo do **proxy** em dev (não o URL público), use `VITE_DEV_SOCKET_TARGET` ao subir o Vite.
 
 ## Scripts
 
